@@ -40,6 +40,9 @@ import za.nmu.wrpv.messages.R;
  */
 public class HistoryFragment extends Fragment {
     public static HistoryAdapter adapter;
+    private static final BlockingDeque<Run> runs = new LinkedBlockingDeque<>();
+    private Thread thread;
+
     public static HistoryFragment newInstance() {
         HistoryFragment fragment = new HistoryFragment();
         adapter = new HistoryAdapter(new ArrayList<>());
@@ -57,6 +60,18 @@ public class HistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupRecyclerView();
+        thread = new Thread(() -> {
+           do {
+               try {
+                   Run run = runs.take();
+                   System.out.println("------------------------------- RAN");
+                   getActivity().runOnUiThread(() -> run.run(this));
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }while (true);
+        });
+        thread.start();
     }
 
     public void setupRecyclerView() {
@@ -64,9 +79,23 @@ public class HistoryFragment extends Fragment {
 
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setOrientation(LinearLayoutManager.VERTICAL);
+
         rvHistory.setAdapter(adapter);
         rvHistory.setLayoutManager(manager);
 
         rvHistory.addItemDecoration(new MaterialDividerItemDecoration( getContext(), null, MaterialDividerItemDecoration.VERTICAL));
+        if (adapter.getItemCount() > 0)
+            rvHistory.smoothScrollToPosition(HistoryFragment.adapter.getItemCount() - 1);
+    }
+
+    public static void runLater(Run run) {
+        runs.add(run);
+        System.out.println("------------------------- ADDED TO RUNS");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (thread.isAlive()) thread.interrupt();
     }
 }

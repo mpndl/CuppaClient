@@ -1,14 +1,8 @@
 package za.nmu.wrpv.messages;
 
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
 
 import za.nmu.wrpv.Item;
 import za.nmu.wrpv.MenuItems;

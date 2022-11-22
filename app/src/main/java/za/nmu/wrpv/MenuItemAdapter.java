@@ -19,8 +19,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Currency;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import za.nmu.wrpv.messages.R;
@@ -93,9 +95,12 @@ public class MenuItemAdapter extends RecyclerView.Adapter<MenuItemAdapter.MenuIt
             NumberPicker npItemQuantity = itemView.findViewById(R.id.np_item_quantity);
             npItemQuantity.setValue(item.quantity);
 
+            Locale local = Locale.getDefault();
+            Currency currency = Currency.getInstance(local);
+
             tvItemName.setText(item.name);
             tvItemDescription.setText(item.description);
-            tvItemCost.setText("R" + item.cost);
+            tvItemCost.setText(currency.getCurrencyCode() + " " + item.cost);
             tvItemCost.setTag(item.cost);
             if (item.image != null) {
                 BitmapDrawable bitmapDrawable = null;

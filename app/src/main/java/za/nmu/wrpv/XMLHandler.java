@@ -53,14 +53,9 @@ public class XMLHandler {
         XPathExpression xPathExpression = xPath.compile("//order[id= '"+history.id+"']");
         Element element = (Element) xPathExpression.evaluate(document, XPathConstants.NODE);
         if (element != null) {
-            /*element.getElementsByTagName("id").item(0).setTextContent(history.id + "");
-            element.getElementsByTagName("date").item(0).setTextContent(history.date);
-            element.getElementsByTagName("time").item(0).setTextContent(history.time);
-            element.getElementsByTagName("items").item(0).setTextContent(history.items);
-            element.getElementsByTagName("telephoneNumber").item(0).setTextContent(history.tel);
-            element.getElementsByTagName("total").item(0).setTextContent(history.total);*/
             element.getElementsByTagName("acknowledged").item(0).setTextContent(history.acknowledged + "");
             element.getElementsByTagName("ready").item(0).setTextContent(history.ready + "");
+            element.getElementsByTagName("cancelled").item(0).setTextContent(history.cancelled + "");
         }
 
         writeToXML(document, ServerHandler.activity.openFileOutput(fileName, MODE_PRIVATE));
@@ -113,10 +108,12 @@ public class XMLHandler {
                     String total = element.getElementsByTagName("total").item(0).getTextContent();
                     String acknowledged = element.getElementsByTagName("acknowledged").item(0).getTextContent();
                     String ready = element.getElementsByTagName("ready").item(0).getTextContent();
+                    String cancelled = element.getElementsByTagName("cancelled").item(0).getTextContent();
                     History history = new History(date, time, items, tel, total);
                     history.acknowledged = Boolean.parseBoolean(acknowledged);
                     history.id = Integer.parseInt(id);
                     history.ready = Boolean.parseBoolean(ready);
+                    history.cancelled = Boolean.parseBoolean(cancelled);
                     run.run(history);
                 }
             } catch (XPathExpressionException | SAXException | ParserConfigurationException | IOException e) {
@@ -147,12 +144,6 @@ public class XMLHandler {
 
             Element element = createOrderElement(document, Order.id, order.dateTime, order.telNum, order.items, order.total);
             root.appendChild(element);
-
-            /*Log.i("cuppano", "appendToXML: ---------------------------------------------");
-            Log.i("cuppano", "appendToXML: root -> " + root.getNodeName());
-            Log.i("cuppano", "appendToXML: element -> " + element.getNodeName());
-            Log.i("cuppano", "appendToXML: fileName -> " + fileName);
-            Log.i("cuppano", "appendToXML: fileName -> " + root.getChildNodes().getLength());*/
 
             writeToXML(document, ServerHandler.activity.openFileOutput(fileName, MODE_PRIVATE));
         } catch (SAXException | IOException e) {
@@ -201,6 +192,7 @@ public class XMLHandler {
         Element totalText = createTextElement(doc, "total", total+ "");
         Element acknowledgedText = createTextElement(doc, "acknowledged", "false");
         Element readyText = createTextElement(doc, "ready", "false");
+        Element cancelledText = createTextElement(doc, "cancelled", "false");
 
         orderElement.appendChild(idText);
         orderElement.appendChild(dateText);
@@ -210,6 +202,7 @@ public class XMLHandler {
         orderElement.appendChild(totalText);
         orderElement.appendChild(acknowledgedText);
         orderElement.appendChild(readyText);
+        orderElement.appendChild(cancelledText);
 
         return orderElement;
     }

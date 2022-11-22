@@ -2,22 +2,18 @@ package za.nmu.wrpv;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import za.nmu.wrpv.messages.Cleanup;
 import za.nmu.wrpv.messages.Message;
 import za.nmu.wrpv.messages.Publish;
 import za.nmu.wrpv.messages.Stop;
@@ -25,7 +21,7 @@ import za.nmu.wrpv.messages.Subscribe;
 
 public class ServerHandler implements Serializable {
     private static final Map<String, BlockingQueue<Message>> messages = new HashMap<>();
-    private static final String serverAddress = "10.0.245.165";
+    private static final String serverAddress = "192.168.43.152";
 
     public static ObjectOutputStream ous;
     public static ObjectInputStream ois;
@@ -58,6 +54,8 @@ public class ServerHandler implements Serializable {
             }catch (InterruptedException | IOException e) {
                 e.printStackTrace();
                 serverWriter = null;
+            }finally {
+                ServerHandler.stop();
             }
         }
     }
@@ -66,7 +64,7 @@ public class ServerHandler implements Serializable {
         @Override
         public void run() {
             try {
-                Socket connection = new Socket(serverAddress, 5050);
+                Socket connection = new Socket(serverAddress, 5051);
                 ois = new ObjectInputStream(connection.getInputStream());
                 ous = new ObjectOutputStream(connection.getOutputStream());
                 ous.flush();
@@ -85,6 +83,7 @@ public class ServerHandler implements Serializable {
             }finally {
                 serverReader = null;
                 ServerHandler.stop();
+                new Cleanup().apply(null);
             }
         }
     }

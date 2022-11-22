@@ -1,7 +1,5 @@
 package za.nmu.wrpv;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +13,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -74,14 +71,34 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryI
         }
 
         public void set(History history) {
-            if (history.ready) {
-                if (history.acknowledged) btnAcknowledgeOrder.setVisibility(View.GONE);
-                else btnAcknowledgeOrder.setVisibility(View.VISIBLE);
+            System.out.println("------------------------" + history.ready + " " + history.acknowledged + " " + history.cancelled);
+            if (history.cancelled) {
+                btnAcknowledgeOrder.setText(R.string.cancelled);
+            }
+            else if (history.ready) {
+                if (history.acknowledged) {
+                    btnAcknowledgeOrder.setText(R.string.acknowledged);
+                    btnAcknowledgeOrder.setEnabled(false);
+                }else
+                {
+                    btnAcknowledgeOrder.setText(R.string.acknowledge);
+                    btnAcknowledgeOrder.setEnabled(true);
+                }
+            }
+            else{
+                if (history.acknowledged) {
+                    btnAcknowledgeOrder.setText(R.string.acknowledged);
+                }
+                else {
+                    btnAcknowledgeOrder.setText(R.string.processing);
+                }
+                btnAcknowledgeOrder.setEnabled(false);
             }
 
             btnAcknowledgeOrder.setOnClickListener(view -> {
                 Button btnAcknowledgeOrder = itemView.findViewById(R.id.btn_acknowledge_order);
-                btnAcknowledgeOrder.setVisibility(View.GONE);
+                btnAcknowledgeOrder.setEnabled(false);
+                btnAcknowledgeOrder.setText(R.string.acknowledged);
                 new OrderAcknowledgedSubscribe(null, null).apply(history);
                 history.acknowledged = true;
                 try {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CuppaClient</string>
+    <string name="menu">Imenyu</string>
+    <string name="orderSent">"I-oda lithunyelwe! "</string>
+    <string name="order_title">"I-oda Lilungile! "</string>
+    <string name="order_text">"I-oda lakho selilungele ukuqoqwa. "</string>
+    <string name="acknowledge">"Vuma Ukuhleleka "</string>
+    <string name="acknowledged">"I-oda livunyiwe "</string>
+    <string name="processing">"Icubungula i-oda "</string>
+    <string name="cancelled">I-oda Likhanseliwe</string>
+</resources>

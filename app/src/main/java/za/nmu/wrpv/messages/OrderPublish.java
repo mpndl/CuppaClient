@@ -1,6 +1,8 @@
 package za.nmu.wrpv.messages;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import java.io.Serializable;
@@ -45,6 +47,9 @@ public class OrderPublish extends Publish implements Serializable {
         });
 
         Order.id++;
+        SharedPreferences preferences = ServerHandler.activity.getPreferences(Context.MODE_PRIVATE);
+        preferences.edit().putInt("orderID", Order.id).apply();
+        System.out.println("--------------------------------------------- SAVED ORDER_ID -> " + Order.id);
 
         try {
             XMLHandler.appendToXML(order, fileName, "orders");

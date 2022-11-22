@@ -9,6 +9,7 @@ public class History {
     public String total;
     public boolean acknowledged = false;
     public boolean ready = false;
+    public boolean cancelled = false;
 
     public History(String date, String time, String items, String tel, String total) {
         this.date = date;

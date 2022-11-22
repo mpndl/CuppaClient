@@ -8,6 +8,7 @@ public class Item implements Serializable {
     public String name;
     public String description;
     public byte[] image;
+    public String currencyCode = "ZAR";
     public String imageName;
     public double cost;
     public int quantity;

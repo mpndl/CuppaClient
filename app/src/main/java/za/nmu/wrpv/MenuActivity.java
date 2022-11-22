@@ -1,25 +1,32 @@
 package za.nmu.wrpv;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
 import java.io.FileNotFoundException;
+import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import za.nmu.wrpv.messages.MenuPublish;
 import za.nmu.wrpv.messages.MenuSubscribe;
 import za.nmu.wrpv.messages.OrderPublish;
 import za.nmu.wrpv.messages.R;
@@ -32,7 +39,15 @@ public class MenuActivity extends AppCompatActivity {
 
         ServerHandler.activity = this;
         ServerHandler.start();
-        ServerHandler.subscribe(new MenuSubscribe(MenuSubscribe.key,null));
+
+        Locale local = Locale.getDefault();
+        Currency currency = Currency.getInstance(local);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("language", Locale. getDefault(). getLanguage());
+        params.put("code", currency.getCurrencyCode());
+
+        ServerHandler.publish(new MenuPublish(null, MenuPublish.key,params));
 
         RecyclerView rvMenuItems = findViewById(R.id.rv_menu_items);
         rvMenuItems.setAdapter(MenuItems.adapter);

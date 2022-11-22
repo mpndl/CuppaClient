@@ -13,4 +13,5 @@ public class Order implements Serializable {
     public double total;
     public boolean acknowledged = false;
     public boolean ready = false;
+    public boolean cancelled = false;
 }

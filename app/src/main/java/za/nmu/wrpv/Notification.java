@@ -2,6 +2,8 @@ package za.nmu.wrpv;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
@@ -14,11 +16,16 @@ public class Notification {
     private static final String channelName = ServerHandler.activity.getString(R.string.order_title);
     private static final String channelDescription = ServerHandler.activity.getResources().getString(R.string.order_text);
     public static void displayNotification() {
+        Intent intent = new Intent(ServerHandler.activity, MainActivity.class);
+        intent.putExtra("pending", true);
+        PendingIntent pendingIntent = PendingIntent.getActivity(ServerHandler.activity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(ServerHandler.activity, channelID)
                 .setSmallIcon(R.drawable.logo)
                 .setContentTitle(ServerHandler.activity.getResources().getString(R.string.order_title))
                 .setContentText(ServerHandler.activity.getResources().getString(R.string.order_text))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent);
 
         NotificationManagerCompat manager = NotificationManagerCompat.from(ServerHandler.activity);
         manager.notify(1, builder.build());
