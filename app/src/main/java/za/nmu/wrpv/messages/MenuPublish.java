@@ -1,6 +1,7 @@
 package za.nmu.wrpv.messages;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ public class MenuPublish extends Publish implements Serializable {
 
     @Override
     public void apply(Object handler) {
-        ServerHandler.activity.runOnUiThread(() -> MenuItems.replace((List<Item>) params.get(key)));
+        List<Item> list = (List<Item>) params.get(key);
+        ServerHandler.activity.runOnUiThread(() -> MenuItems.replace(list));
     }
 }

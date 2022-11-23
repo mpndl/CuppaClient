@@ -3,6 +3,7 @@ package za.nmu.wrpv;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
@@ -12,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat;
 import za.nmu.wrpv.messages.R;
 
 public class Notification {
+    private static final int NOTIFICATION_ID = 1;
     private static final String channelID = "orderReady";
     private static final String channelName = ServerHandler.activity.getString(R.string.order_title);
     private static final String channelDescription = ServerHandler.activity.getResources().getString(R.string.order_text);
@@ -28,7 +30,7 @@ public class Notification {
                 .setContentIntent(pendingIntent);
 
         NotificationManagerCompat manager = NotificationManagerCompat.from(ServerHandler.activity);
-        manager.notify(1, builder.build());
+        manager.notify(NOTIFICATION_ID, builder.build());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
@@ -36,5 +38,11 @@ public class Notification {
             NotificationManager manager1 = ServerHandler.activity.getSystemService(NotificationManager.class);
             manager1.createNotificationChannel(channel);
         }
+    }
+
+    public static void cancel(Context context) {
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager nm = (NotificationManager) context.getSystemService(ns);
+        nm.cancel(NOTIFICATION_ID);
     }
 }

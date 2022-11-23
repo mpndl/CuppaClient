@@ -8,29 +8,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.Button;
 
 import com.google.android.material.divider.MaterialDividerItemDecoration;
 
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
-
-import za.nmu.wrpv.messages.History;
-import za.nmu.wrpv.messages.OrderPublish;
 import za.nmu.wrpv.messages.R;
 
 /**
@@ -63,7 +50,14 @@ public class HistoryFragment extends Fragment {
         thread = new Thread(() -> {
            do {
                try {
+                   if (getActivity() == null || !isAdded() || getView() == null || !isVisible()) {
+                       continue;
+                   }
                    Run run = runs.take();
+                   if (getActivity() == null || !isAdded() || getView() == null || !isVisible()) {
+                       runs.add(run);
+                       continue;
+                   }
                    System.out.println("------------------------------- RAN");
                    getActivity().runOnUiThread(() -> run.run(this));
                } catch (InterruptedException e) {
@@ -72,6 +66,8 @@ public class HistoryFragment extends Fragment {
            }while (true);
         });
         thread.start();
+
+        //Notification.cancel(requireContext());
     }
 
     public void setupRecyclerView() {
@@ -91,11 +87,5 @@ public class HistoryFragment extends Fragment {
     public static void runLater(Run run) {
         runs.add(run);
         System.out.println("------------------------- ADDED TO RUNS");
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (thread.isAlive()) thread.interrupt();
     }
 }

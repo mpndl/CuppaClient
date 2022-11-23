@@ -1,9 +1,6 @@
 package za.nmu.wrpv.messages;
 
-import android.view.View;
-import android.widget.Button;
-
-import androidx.recyclerview.widget.RecyclerView;
+import android.util.Log;
 
 import org.xml.sax.SAXException;
 
@@ -17,7 +14,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import za.nmu.wrpv.HistoryFragment;
 import za.nmu.wrpv.Notification;
-import za.nmu.wrpv.ServerHandler;
 import za.nmu.wrpv.XMLHandler;
 
 public class OrderReadyPublish extends Publish implements Serializable {
@@ -36,6 +32,10 @@ public class OrderReadyPublish extends Publish implements Serializable {
         history.id = (int) publisher;
         try {
             XMLHandler.modifyXML(history, OrderPublish.fileName, "orders");
+            HistoryFragment.runLater(o -> {
+                HistoryFragment fragment = (HistoryFragment) o;
+                Notification.cancel(fragment.requireContext());
+            });
         } catch (IOException | TransformerException | ParserConfigurationException | XPathExpressionException | SAXException e) {
             e.printStackTrace();
         }

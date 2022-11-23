@@ -52,6 +52,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryI
         notifyItemInserted(getItemCount() - 1);
     }
 
+    public void updateState(History history) {
+        for (int i = 0; i < histories.size(); i++) {
+            History h = histories.get(i);
+            if (h.id == history.id) {
+                h.acknowledged = history.acknowledged;
+                h.ready = history.ready;
+                notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
     public class HistoryItemHolder extends RecyclerView.ViewHolder {
         public TextView tvDate;
         public TextView tvTime;

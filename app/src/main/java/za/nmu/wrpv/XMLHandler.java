@@ -59,6 +59,7 @@ public class XMLHandler {
         }
 
         writeToXML(document, ServerHandler.activity.openFileOutput(fileName, MODE_PRIVATE));
+        ServerHandler.activity.runOnUiThread(() -> HistoryFragment.adapter.updateState(history));
     }
 
     public static void loadFromXML(String fileName, Run run) {
