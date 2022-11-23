@@ -1,3 +1,3 @@
 # CuppaClient
  
-(https://github.com/mpndl/CuppaServer "CuppaServer")
+(https://github.com/mpndl/CuppaServer CuppaServer)
