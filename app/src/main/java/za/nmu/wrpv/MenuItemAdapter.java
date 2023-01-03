@@ -1,5 +1,6 @@
 package za.nmu.wrpv;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -43,7 +44,8 @@ public class MenuItemAdapter extends RecyclerView.Adapter<MenuItemAdapter.MenuIt
     @Override
     public void onBindViewHolder(@NonNull MenuItemHolder holder, int position) {
         Item item = items.get(position);
-        holder.set(item);
+        MainActivity.runLater(activity -> activity.runOnUiThread(() -> holder.set(item, activity)));
+
         holder.itemView.setOnClickListener(view -> {
             NumberPicker npItemQuantity = holder.itemView.findViewById(R.id.np_item_quantity);
             items.get(position).quantity = npItemQuantity.getValue();
@@ -91,7 +93,7 @@ public class MenuItemAdapter extends RecyclerView.Adapter<MenuItemAdapter.MenuIt
             });
         }
 
-        public void set(Item item) {
+        public void set(Item item, Activity activity) {
             NumberPicker npItemQuantity = itemView.findViewById(R.id.np_item_quantity);
             npItemQuantity.setValue(item.quantity);
 
@@ -104,20 +106,20 @@ public class MenuItemAdapter extends RecyclerView.Adapter<MenuItemAdapter.MenuIt
             tvItemCost.setTag(item.cost);
             if (item.image != null) {
                 BitmapDrawable bitmapDrawable = null;
-                try (FileOutputStream fos = ServerHandler.activity.openFileOutput(item.imageName, Context.MODE_PRIVATE)) {
+                try (FileOutputStream fos = activity.openFileOutput(item.imageName, Context.MODE_PRIVATE)) {
                     fos.write(item.image);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                try (FileInputStream fis = ServerHandler.activity.openFileInput(item.imageName)) {
+                try (FileInputStream fis = activity.openFileInput(item.imageName)) {
                     bitmapDrawable = new BitmapDrawable(fis);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 if (bitmapDrawable != null) {
                     Bitmap bitmap = bitmapDrawable.getBitmap();
-                    Drawable d = new BitmapDrawable(ServerHandler.activity.getResources(), bitmap);
+                    Drawable d = new BitmapDrawable(activity.getResources(), bitmap);
                     ivItemImage.setBackground(d);
                     ivItemImage.setVisibility(View.VISIBLE);
                 }

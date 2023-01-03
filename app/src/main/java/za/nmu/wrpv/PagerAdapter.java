@@ -8,7 +8,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import java.util.List;
 
 public class PagerAdapter extends FragmentStateAdapter {
-    List<Fragment> fragments;
+    private final List<Fragment> fragments;
 
     public PagerAdapter(@NonNull FragmentActivity fragmentActivity, List<Fragment> fragments) {
         super(fragmentActivity);

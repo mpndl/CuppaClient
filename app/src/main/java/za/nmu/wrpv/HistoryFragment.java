@@ -17,7 +17,10 @@ import com.google.android.material.divider.MaterialDividerItemDecoration;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import za.nmu.wrpv.messages.History;
 import za.nmu.wrpv.messages.R;
 
 /**
@@ -26,19 +29,17 @@ import za.nmu.wrpv.messages.R;
  * create an instance of this fragment.
  */
 public class HistoryFragment extends Fragment {
-    public static HistoryAdapter adapter;
-    private static final BlockingDeque<Run> runs = new LinkedBlockingDeque<>();
-    private Thread thread;
+    public HistoryAdapter adapter;
+    private static final Runner<HistoryFragment> RUNNER = new Runner<>();
 
     public static HistoryFragment newInstance() {
-        HistoryFragment fragment = new HistoryFragment();
-        adapter = new HistoryAdapter(new ArrayList<>());
-        return fragment;
+        return new HistoryFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        adapter = new HistoryAdapter(new ArrayList<>(), requireActivity());
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_history, container, false);
     }
@@ -47,31 +48,18 @@ public class HistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupRecyclerView();
-        thread = new Thread(() -> {
-           do {
-               try {
-                   if (getActivity() == null || !isAdded() || getView() == null || !isVisible()) {
-                       continue;
-                   }
-                   Run run = runs.take();
-                   if (getActivity() == null || !isAdded() || getView() == null || !isVisible()) {
-                       runs.add(run);
-                       continue;
-                   }
-                   System.out.println("------------------------------- RAN");
-                   getActivity().runOnUiThread(() -> run.run(this));
-               } catch (InterruptedException e) {
-                   e.printStackTrace();
-               }
-           }while (true);
-        });
-        thread.start();
+
+        Predicate<HistoryFragment> runWhen = fragment ->
+                fragment.getActivity() != null && fragment.isAdded() && fragment.getView() != null && fragment.isVisible();
+        RUNNER.setParam(this);
+        RUNNER.setRunWhen(runWhen);
+        RUNNER.start();
 
         //Notification.cancel(requireContext());
     }
 
     public void setupRecyclerView() {
-        RecyclerView rvHistory = getView().findViewById(R.id.rv_history);
+        RecyclerView rvHistory = requireView().findViewById(R.id.rv_history);
 
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -79,13 +67,12 @@ public class HistoryFragment extends Fragment {
         rvHistory.setAdapter(adapter);
         rvHistory.setLayoutManager(manager);
 
-        rvHistory.addItemDecoration(new MaterialDividerItemDecoration( getContext(), null, MaterialDividerItemDecoration.VERTICAL));
+        rvHistory.addItemDecoration(new MaterialDividerItemDecoration( requireContext(), null, MaterialDividerItemDecoration.VERTICAL));
         if (adapter.getItemCount() > 0)
-            rvHistory.smoothScrollToPosition(HistoryFragment.adapter.getItemCount() - 1);
+            rvHistory.smoothScrollToPosition(adapter.getItemCount() - 1);
     }
 
-    public static void runLater(Run run) {
-        runs.add(run);
-        System.out.println("------------------------- ADDED TO RUNS");
+    public static void runLater(Consumer<HistoryFragment> consumer) {
+        RUNNER.runLater(consumer);
     }
 }

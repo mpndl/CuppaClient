@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import za.nmu.wrpv.Item;
+import za.nmu.wrpv.MenuActivity;
 import za.nmu.wrpv.MenuItems;
 import za.nmu.wrpv.ServerHandler;
 
@@ -19,6 +20,6 @@ public class MenuPublish extends Publish implements Serializable {
     @Override
     public void apply(Object handler) {
         List<Item> list = (List<Item>) params.get(key);
-        ServerHandler.activity.runOnUiThread(() -> MenuItems.replace(list));
+        MenuActivity.runLater(activity -> activity.runOnUiThread(() -> MenuItems.replace(list)));
     }
 }

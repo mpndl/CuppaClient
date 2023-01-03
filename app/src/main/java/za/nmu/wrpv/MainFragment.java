@@ -2,6 +2,7 @@ package za.nmu.wrpv;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -44,7 +45,7 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (getArguments() != null)
             total = getArguments().getDouble("total");
@@ -55,11 +56,11 @@ public class MainFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ImageButton ibSendOrder = getView().findViewById(R.id.ib_send_order);
+        ImageButton ibSendOrder = requireView().findViewById(R.id.ib_send_order);
         if (total != -1) {
                 ibSendOrder.setVisibility(View.VISIBLE);
 
-                TextView tvOrderCost = getView().findViewById(R.id.tv_order_cost);
+                TextView tvOrderCost = requireView().findViewById(R.id.tv_order_cost);
                 tvOrderCost.setText(total + "");
         }
         else
@@ -70,17 +71,17 @@ public class MainFragment extends Fragment {
     }
 
     public void onSendOrder() {
-        ImageButton ibSendOrder = getView().findViewById(R.id.ib_send_order);
+        ImageButton ibSendOrder = requireView().findViewById(R.id.ib_send_order);
         ibSendOrder.setOnClickListener(view -> {
             new OrderPublish(null, null, null).apply(null);
             Snackbar snackbar = Snackbar.make(view, getResources().getString(R.string.orderSent), Snackbar.LENGTH_INDEFINITE);
-            snackbar.setTextColor(getActivity().getColor(R.color.green));
+            snackbar.setTextColor(requireActivity().getColor(R.color.green));
             snackbar.setAction("OK", view1 -> {
                 snackbar.dismiss();
             });
             snackbar.setBackgroundTint(Color.BLACK);
             snackbar.show();
-            TextView tvOrderCost = getView().findViewById(R.id.tv_order_cost);
+            TextView tvOrderCost = requireView().findViewById(R.id.tv_order_cost);
 
             ibSendOrder.setVisibility(View.GONE);
 
@@ -89,7 +90,7 @@ public class MainFragment extends Fragment {
     }
 
     public void onCreateModifyOrder() {
-        ImageButton ibCreateModifyOrder = getView().findViewById(R.id.ib_create_modify_order);
+        ImageButton ibCreateModifyOrder = requireView().findViewById(R.id.ib_create_modify_order);
         ibCreateModifyOrder.setOnClickListener(view -> {
 
             Intent intent = new Intent(getContext(), MenuActivity.class);

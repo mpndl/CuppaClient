@@ -2,9 +2,11 @@ package za.nmu.wrpv;
 
 import static android.content.Context.MODE_PRIVATE;
 
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -15,9 +17,9 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,13 +37,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import za.nmu.wrpv.messages.History;
+import static za.nmu.wrpv.Helpers.*;
 
 public class XMLHandler {
 
-    public static void modifyXML(History history, String fileName, String elementName) throws IOException, TransformerException, ParserConfigurationException, XPathExpressionException, SAXException, XPathExpressionException {
+    public static void modifyXML(History history, String fileName, String elementName, Activity activity) throws IOException, TransformerException, ParserConfigurationException, XPathExpressionException, SAXException, XPathExpressionException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(ServerHandler.activity.openFileInput(fileName));
+        Document document = builder.parse(activity.openFileInput(fileName));
         Element root = document.getDocumentElement();
         if (root == null) {
             root = document.createElement(elementName);
@@ -58,16 +61,17 @@ public class XMLHandler {
             element.getElementsByTagName("cancelled").item(0).setTextContent(history.cancelled + "");
         }
 
-        writeToXML(document, ServerHandler.activity.openFileOutput(fileName, MODE_PRIVATE));
-        ServerHandler.activity.runOnUiThread(() -> HistoryFragment.adapter.updateState(history));
+        writeToXML(document, activity.openFileOutput(fileName, MODE_PRIVATE));
+
+        activity.runOnUiThread(() -> HistoryFragment.runLater(fragment -> fragment.requireActivity().runOnUiThread(() -> fragment.adapter.updateState(history))));
     }
 
-    public static void loadFromXML(String fileName, Run run) {
-        if (fileExists(ServerHandler.activity,fileName)) {
+    public static void loadFromXML(String fileName, Consumer<Item> consumer, Activity activity) {
+        if (fileExists(activity,fileName)) {
             try {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(ServerHandler.activity.openFileInput(fileName));
+                Document document = builder.parse(activity.openFileInput(fileName));
 
                 XPath xPath = XPathFactory.newInstance().newXPath();
                 XPathExpression xPathExpression = xPath.compile("//item");
@@ -81,7 +85,7 @@ public class XMLHandler {
                     String quantity = element.getElementsByTagName("quantity").item(0).getTextContent();
                     Item item = new Item(name, description, null, imageName, Double.parseDouble(cost), Integer.parseInt(quantity));
 
-                    run.run(item);
+                    consumer.accept(item);
                 }
             } catch (XPathExpressionException | SAXException | ParserConfigurationException | IOException e) {
                 e.printStackTrace();
@@ -89,12 +93,12 @@ public class XMLHandler {
         }
     }
 
-    public static void loadHistoryFromXML(String fileName, Run run) {
-        if (fileExists(ServerHandler.activity,fileName)) {
+    public static void loadHistoryFromXML(String fileName, Consumer<History> consumer, Activity activity) {
+        if (fileExists(activity,fileName)) {
             try {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(ServerHandler.activity.openFileInput(fileName));
+                Document document = builder.parse(activity.openFileInput(fileName));
 
                 XPath xPath = XPathFactory.newInstance().newXPath();
                 XPathExpression xPathExpression = xPath.compile("//order");
@@ -115,7 +119,7 @@ public class XMLHandler {
                     history.id = Integer.parseInt(id);
                     history.ready = Boolean.parseBoolean(ready);
                     history.cancelled = Boolean.parseBoolean(cancelled);
-                    run.run(history);
+                    consumer.accept(history);
                 }
             } catch (XPathExpressionException | SAXException | ParserConfigurationException | IOException e) {
                 e.printStackTrace();
@@ -123,14 +127,16 @@ public class XMLHandler {
         }
     }
 
-    public static void appendToXML(Order order, String fileName, String elementName) throws TransformerException, ParserConfigurationException {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static void appendToXML(Order order, String fileName, String elementName, Activity activity) throws TransformerException, ParserConfigurationException {
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         Document document;
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
 
-            if (fileExists(ServerHandler.activity, fileName)) {
-                document = builder.parse(ServerHandler.activity.openFileInput(fileName));
+            if (fileExists(activity, fileName)) {
+                document = builder.parse(activity.openFileInput(fileName));
             }
             else {
                 document = builder.newDocument();
@@ -146,7 +152,7 @@ public class XMLHandler {
             Element element = createOrderElement(document, Order.id, order.dateTime, order.telNum, order.items, order.total);
             root.appendChild(element);
 
-            writeToXML(document, ServerHandler.activity.openFileOutput(fileName, MODE_PRIVATE));
+            writeToXML(document, activity.openFileOutput(fileName, MODE_PRIVATE));
         } catch (SAXException | IOException e) {
             e.printStackTrace();
         }
@@ -175,9 +181,11 @@ public class XMLHandler {
         return itemElement;
     }
 
-    public static Element createOrderElement(Document doc, int id, Date date, String telNum, List<Item> items, double total) {
-        @SuppressLint("SimpleDateFormat") String t = new SimpleDateFormat("HH:mm").format(date);
-        @SuppressLint("SimpleDateFormat") String d = new SimpleDateFormat("yyyy-MM-dd").format(date);
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static Element createOrderElement(Document doc, int id, LocalDateTime dateTime, String telNum, List<Item> items, double total) {
+
+        String d = getDefaultFormattedDate(dateTime);
+        String t = getDefaultFormattedTime(dateTime);
 
         Element orderElement = doc.createElement("order");
 
@@ -217,12 +225,4 @@ public class XMLHandler {
 
         transformer.transform(new DOMSource(doc), new StreamResult(fos));
     }
-
-
-
-    public static boolean fileExists(Context context, String filename) {
-        File file = context.getFileStreamPath(filename);
-        return file != null && file.exists();
-    }
-
 }

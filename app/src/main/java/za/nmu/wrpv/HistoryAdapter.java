@@ -1,5 +1,6 @@
 package za.nmu.wrpv;
 
+import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +26,10 @@ import za.nmu.wrpv.messages.R;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryItemHolder>{
     public final List<History> histories;
-    public HistoryAdapter(List<History> histories) {
+    private final Activity activity;
+    public HistoryAdapter(List<History> histories, Activity activity) {
         this.histories = histories;
+        this.activity = activity;
     }
 
     @NonNull
@@ -114,7 +117,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryI
                 new OrderAcknowledgedSubscribe(null, null).apply(history);
                 history.acknowledged = true;
                 try {
-                    XMLHandler.modifyXML(history, OrderPublish.fileName, "orders");
+                    XMLHandler.modifyXML(history, OrderPublish.fileName, "orders", activity);
                 } catch (IOException | TransformerException | ParserConfigurationException | XPathExpressionException | SAXException e) {
                     e.printStackTrace();
                 }

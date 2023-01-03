@@ -1,8 +1,5 @@
 package za.nmu.wrpv;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -28,8 +25,6 @@ public class ServerHandler implements Serializable {
     private static ServerReader serverReader;
     private static ServerWriter serverWriter;
     private static final String TAG = "cuppano";
-    @SuppressLint("StaticFieldLeak")
-    public static Activity activity;
 
     public static void start() {
         if (!running()) {

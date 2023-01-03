@@ -1,7 +1,5 @@
 package za.nmu.wrpv.messages;
 
-import android.util.Log;
-
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -13,6 +11,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
 import za.nmu.wrpv.HistoryFragment;
+import za.nmu.wrpv.MainActivity;
 import za.nmu.wrpv.Notification;
 import za.nmu.wrpv.XMLHandler;
 
@@ -25,20 +24,20 @@ public class OrderReadyPublish extends Publish implements Serializable {
 
     @Override
     public void apply(Object handler) {
-        Notification.displayNotification();
-        History history = new History(null, null, null, null, null);
-        history.acknowledged = false;
-        history.ready = true;
-        history.id = (int) publisher;
-        try {
-            XMLHandler.modifyXML(history, OrderPublish.fileName, "orders");
-            HistoryFragment.runLater(o -> {
-                HistoryFragment fragment = (HistoryFragment) o;
-                Notification.cancel(fragment.requireContext());
-            });
-        } catch (IOException | TransformerException | ParserConfigurationException | XPathExpressionException | SAXException e) {
-            e.printStackTrace();
-        }
+        MainActivity.runLater(activity -> {
+            Notification.displayNotification(activity);
+            History history = new History(null, null, null, null, null);
+            history.acknowledged = false;
+            history.ready = true;
+            history.id = (int) publisher;
+            try {
+                XMLHandler.modifyXML(history, OrderPublish.fileName, "orders", activity);
+                HistoryFragment.runLater(fragment -> Notification.cancel(fragment.requireContext()));
+            } catch (IOException | TransformerException | ParserConfigurationException | XPathExpressionException | SAXException e) {
+                e.printStackTrace();
+            }
+        });
+
 
 
         /*RecyclerView rvHistory = ServerHandler.activity.findViewById(R.id.rv_history);

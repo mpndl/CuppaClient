@@ -1,43 +1,42 @@
 package za.nmu.wrpv;
 
-import androidx.annotation.NonNull;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewTreeObserver;
-
-import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
 import java.util.Currency;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import za.nmu.wrpv.messages.MenuPublish;
-import za.nmu.wrpv.messages.MenuSubscribe;
-import za.nmu.wrpv.messages.OrderPublish;
 import za.nmu.wrpv.messages.R;
 
 public class MenuActivity extends AppCompatActivity {
+    private static final Runner<MenuActivity> RUNNER = new Runner<>();
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+        RUNNER.setParam(this);
+        RUNNER.setRunWhen(activity -> true);
+        RUNNER.start();
 
-        ServerHandler.activity = this;
         ServerHandler.start();
 
         Locale local = Locale.getDefault();
@@ -65,6 +64,7 @@ public class MenuActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onPause() {
         super.onPause();
@@ -72,22 +72,18 @@ public class MenuActivity extends AppCompatActivity {
             deleteFile(MenuItems.fileName);
 
             Order order = new Order();
-            order.dateTime = new Date();
+            order.dateTime = LocalDateTime.now();
             order.telNum = "034 948 3331";
             order.items = MenuItems.adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
-            order.items.stream().forEach(item -> {
-                order.total += item.cost * item.quantity;
-            });
+            order.items.forEach(item -> order.total += item.cost * item.quantity);
 
-            XMLHandler.appendToXML(order, MenuItems.fileName, MenuItems.elementName);
+            XMLHandler.appendToXML(order, MenuItems.fileName, MenuItems.elementName, this);
         } catch (TransformerException | ParserConfigurationException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ServerHandler.stop();
+    public static void runLater(Consumer<MenuActivity> consumer) {
+        RUNNER.runLater(consumer);
     }
 }
