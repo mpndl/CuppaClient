@@ -20,6 +20,7 @@ import javax.xml.transform.TransformerException;
 
 import za.nmu.wrpv.HistoryFragment;
 import za.nmu.wrpv.MainActivity;
+import za.nmu.wrpv.MenuActivity;
 import za.nmu.wrpv.MenuItems;
 import za.nmu.wrpv.Order;
 import za.nmu.wrpv.ServerHandler;
@@ -40,37 +41,39 @@ public class OrderPublish extends Publish implements Serializable {
     public void apply(Object handler) {
         topic = key;
 
-        Order order = new Order();
-        order.dateTime = LocalDateTime.now();
-        order.telNum = "034 948 3331";
-        order.items = MenuItems.adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
-        order.items.forEach(item -> order.total += item.cost * item.quantity);
+        MenuActivity.runLater(menuActivity -> {
+            Order order = new Order();
+            order.dateTime = LocalDateTime.now();
+            order.telNum = "034 948 3331";
+            order.items = menuActivity.adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
+            order.items.forEach(item -> order.total += item.cost * item.quantity);
 
-        Order.id++;
+            Order.id++;
 
-        MainActivity.runLater(activity -> {
-            SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
-            preferences.edit().putInt("orderID", Order.id).apply();
-            System.out.println("--------------------------------------------- SAVED ORDER_ID -> " + Order.id);
+            MainActivity.runLater(activity -> {
+                SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
+                preferences.edit().putInt("orderID", Order.id).apply();
+                System.out.println("--------------------------------------------- SAVED ORDER_ID -> " + Order.id);
 
-            try {
-                XMLHandler.appendToXML(order, fileName, "orders", activity);
-            } catch (TransformerException | ParserConfigurationException e) {
-                e.printStackTrace();
-            }
+                try {
+                    XMLHandler.appendToXML(order, fileName, "orders", activity);
+                } catch (TransformerException | ParserConfigurationException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            String tel = order.telNum;
+            String items = order.items.stream().map(item -> "\t\t\t" + item.name + "\n\t\t\t" + item.description
+                    + "\n\t\t\t" + item.imageName + "\n\t\t\t" + item.cost + "\n\t\t\t" + item.quantity).collect(Collectors.joining());
+            String total = order.total + "";
+
+            History history = new History(getDefaultFormattedDate(order.dateTime), getDefaultFormattedTime(order.dateTime), items, tel, total);
+            history.id = Order.id;
+
+            HistoryFragment.runLater(fragment -> fragment.requireActivity().runOnUiThread(() -> fragment.adapter.add(history)));
+
+            OrderPublish message = new OrderPublish(Order.id, topic, Map.of(key, order));
+            ServerHandler.publish(message);
         });
-
-        String tel = order.telNum;
-        String items = order.items.stream().map(item -> "\t\t\t" + item.name + "\n\t\t\t" + item.description
-                + "\n\t\t\t" + item.imageName + "\n\t\t\t" + item.cost + "\n\t\t\t" + item.quantity).collect(Collectors.joining());
-        String total = order.total + "";
-
-        History history = new History(getDefaultFormattedDate(order.dateTime), getDefaultFormattedTime(order.dateTime), items, tel, total);
-        history.id = Order.id;
-
-        HistoryFragment.runLater(fragment -> fragment.requireActivity().runOnUiThread(() -> fragment.adapter.add(history)));
-
-        OrderPublish message = new OrderPublish(Order.id, topic, Map.of(key, order));
-        ServerHandler.publish(message);
     }
 }

@@ -1,5 +1,6 @@
 package za.nmu.wrpv;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,10 +54,6 @@ public class HistoryFragment extends Fragment {
         Predicate<HistoryFragment> runWhen = fragment ->
                 fragment.getActivity() != null && fragment.isAdded() && fragment.getView() != null && fragment.isVisible();
         RUNNER.setParam(this);
-        RUNNER.setRunWhen(runWhen);
-        RUNNER.start();
-
-        //Notification.cancel(requireContext());
     }
 
     public void setupRecyclerView() {
@@ -67,9 +65,7 @@ public class HistoryFragment extends Fragment {
         rvHistory.setAdapter(adapter);
         rvHistory.setLayoutManager(manager);
 
-        rvHistory.addItemDecoration(new MaterialDividerItemDecoration( requireContext(), null, MaterialDividerItemDecoration.VERTICAL));
-        if (adapter.getItemCount() > 0)
-            rvHistory.smoothScrollToPosition(adapter.getItemCount() - 1);
+        rvHistory.addItemDecoration(new MaterialDividerItemDecoration(requireContext(), null, MaterialDividerItemDecoration.VERTICAL));
     }
 
     public static void runLater(Consumer<HistoryFragment> consumer) {

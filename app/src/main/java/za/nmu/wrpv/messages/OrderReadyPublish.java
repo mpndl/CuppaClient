@@ -37,21 +37,5 @@ public class OrderReadyPublish extends Publish implements Serializable {
                 e.printStackTrace();
             }
         });
-
-
-
-        /*RecyclerView rvHistory = ServerHandler.activity.findViewById(R.id.rv_history);
-        rvHistory.smoothScrollToPosition(HistoryFragment.adapter.getItemCount() - 1);
-        for (int i = 0; i < rvHistory.getChildCount(); i++) {
-            System.out.println(" --------------------------------- RAN " + i);
-            View root = rvHistory.getChildAt(i);
-            Button button = root.findViewById(R.id.btn_acknowledge_order);
-            String id = button.getTag().toString();
-            System.out.println("-----------------------------------" + id);
-            if (id.equals(history.id + "")) {
-                button.setEnabled(true);
-                button.setText(R.string.acknowledge);
-            }
-        }*/
     }
 }

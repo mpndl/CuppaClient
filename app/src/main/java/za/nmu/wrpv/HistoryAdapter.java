@@ -67,6 +67,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryI
         }
     }
 
+    public void setItems(List<History> newHistories) {
+        //get the current items
+        int currentSize = histories.size();
+        //remove the current items
+        histories.clear();
+        //add all the new items
+        histories.addAll(newHistories);
+        //tell the recycler view that all the old items are gone
+        notifyItemRangeRemoved(0, currentSize);
+        //tell the recycler view how many new items we added
+        notifyItemRangeInserted(0, newHistories.size());
+    }
+
     public class HistoryItemHolder extends RecyclerView.ViewHolder {
         public TextView tvDate;
         public TextView tvTime;

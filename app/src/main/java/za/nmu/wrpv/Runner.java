@@ -1,18 +1,19 @@
 package za.nmu.wrpv;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import android.util.Log;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 
 final class Runner<T>{
-    private final BlockingQueue<Consumer<T>> consumers = new LinkedBlockingQueue<>();
     private T param;
     private Predicate<T> runWhen;
-    private Thread runner;
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
     public Runner() {
-        runWhen = t -> true;
+        runWhen = param -> true;
     }
 
     public void setParam(T param) {
@@ -24,30 +25,23 @@ final class Runner<T>{
     }
 
     public void runLater(Consumer<T> consumer) {
-        consumers.add(consumer);
-    }
-    private void run() {
-        try{
-            while(true) {
-                Consumer<T> consumer =  consumers.take();
-                while (!runWhen.test(param)) {
-                    Thread.sleep(1000);
-                }
-                consumer.accept(param);
+        executor.submit(() -> {
+            try {
+                run(consumer);
+            } catch (Exception e) {
+                Log.e("cuppano", "runLater: ", e);
             }
-        } catch (InterruptedException ignored) {}
+        });
     }
-
-    public void start() {
-        if (runner == null) runner = new Thread(this::run);
-        if (!runner.isAlive()) runner.start();
+    private void run(Consumer<T> consumer) throws Exception {
+        while (param == null || !runWhen.test(param)) {
+            Thread.sleep(1000);
+        }
+        consumer.accept(param);
     }
 
     public void stop() {
-        if (runner != null) {
-            if (runner.isAlive()) runner.interrupt();
-            runner = null;
-        }
+        executor.shutdown();
     }
 }
 

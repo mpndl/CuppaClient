@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import za.nmu.wrpv.messages.MenuPublish;
 import za.nmu.wrpv.messages.R;
 
 public class MenuActivity extends AppCompatActivity {
+    public final MenuItemAdapter adapter = new MenuItemAdapter(new ArrayList<>());
     private static final Runner<MenuActivity> RUNNER = new Runner<>();
     @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
@@ -35,7 +37,6 @@ public class MenuActivity extends AppCompatActivity {
         setContentView(R.layout.activity_menu);
         RUNNER.setParam(this);
         RUNNER.setRunWhen(activity -> true);
-        RUNNER.start();
 
         ServerHandler.start();
 
@@ -49,7 +50,7 @@ public class MenuActivity extends AppCompatActivity {
         ServerHandler.publish(new MenuPublish(null, MenuPublish.key,params));
 
         RecyclerView rvMenuItems = findViewById(R.id.rv_menu_items);
-        rvMenuItems.setAdapter(MenuItems.adapter);
+        rvMenuItems.setAdapter(adapter);
         rvMenuItems.setLayoutManager(new LinearLayoutManager(this));
         rvMenuItems.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
@@ -57,7 +58,7 @@ public class MenuActivity extends AppCompatActivity {
     public void onConfirmOrder(View view) {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         double total;
-        List<Item> items = MenuItems.adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
+        List<Item> items = adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
         total = items.stream().mapToDouble(item -> item.cost * item.quantity).sum();
         if (total != 0D)
             intent.putExtra("total", total);
@@ -74,7 +75,7 @@ public class MenuActivity extends AppCompatActivity {
             Order order = new Order();
             order.dateTime = LocalDateTime.now();
             order.telNum = "034 948 3331";
-            order.items = MenuItems.adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
+            order.items = adapter.items.stream().filter(item -> item.quantity > 0).collect(Collectors.toList());
             order.items.forEach(item -> order.total += item.cost * item.quantity);
 
             XMLHandler.appendToXML(order, MenuItems.fileName, MenuItems.elementName, this);

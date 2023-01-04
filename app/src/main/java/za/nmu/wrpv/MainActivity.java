@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import za.nmu.wrpv.messages.History;
 import za.nmu.wrpv.messages.OrderPublish;
 import za.nmu.wrpv.messages.R;
 
@@ -30,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         RUNNER.setParam(this);
         RUNNER.setRunWhen(activity -> true);
-        RUNNER.start();
 
         ServerHandler.start();
 
@@ -48,9 +49,8 @@ public class MainActivity extends AppCompatActivity {
                 .ifPresentOrElse(this::setupViewPager, () -> setupViewPager(-1));
 
         HistoryFragment.runLater(fragment -> {
-            fragment.adapter.histories.clear();
-            XMLHandler.loadHistoryFromXML(OrderPublish.fileName, history ->
-                    fragment.requireActivity().runOnUiThread(() -> fragment.adapter.add(history)), this);
+             List<History> newHistories = XMLHandler.loadHistoryFromXML(OrderPublish.fileName, this);
+             fragment.requireActivity().runOnUiThread(() -> fragment.adapter.setItems(newHistories));
         });
 
     }
@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
         preferences.edit().putInt("orderID", Order.id).apply();
         System.out.println("--------------------------------------------- SAVED ORDER_ID -> " + Order.id);
+        RUNNER.stop();
     }
 
     public static void runLater(Consumer<MainActivity> consumer) {

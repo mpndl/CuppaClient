@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -93,7 +94,8 @@ public class XMLHandler {
         }
     }
 
-    public static void loadHistoryFromXML(String fileName, Consumer<History> consumer, Activity activity) {
+    public static List<History> loadHistoryFromXML(String fileName, Activity activity) {
+        List<History> histories = new ArrayList<>();
         if (fileExists(activity,fileName)) {
             try {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -119,12 +121,13 @@ public class XMLHandler {
                     history.id = Integer.parseInt(id);
                     history.ready = Boolean.parseBoolean(ready);
                     history.cancelled = Boolean.parseBoolean(cancelled);
-                    consumer.accept(history);
+                    histories.add(history);
                 }
             } catch (XPathExpressionException | SAXException | ParserConfigurationException | IOException e) {
                 e.printStackTrace();
             }
         }
+        return histories;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
